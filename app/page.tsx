@@ -1,13 +1,21 @@
 
 import Image from "next/image";
 //import Hero from '@/components/Hero' in this case we call import one by one or we can use the index.ts to get all the import component
-import { SearchBar, CustomFilter, Hero, CarCard } from "@/components/Index";
+import { SearchBar, CustomFilter, Hero, CarCard, ShowMore } from "@/components/Index";
 
 import { fetchCars } from "@/utils";
-export default async function Home() {
+import { fuels, yearsOfProduction } from "@/constants";
+export default async function Home({searchParams}:any) {
 
-  const allCars=await fetchCars()
+  const allCars=await fetchCars({
+    manufacturer:searchParams.manufacturer || "",
+    year:searchParams.year || 2022,
+    fuel:searchParams.fuel || "",
+    limit:searchParams.limit || 10,
+    model:searchParams.model || ""
+  })
 
+  // test is we get data after feching the data
  const isDataEmpty=!Array.isArray(allCars) || allCars.length <1 || !allCars;
 
   return (
@@ -22,8 +30,8 @@ export default async function Home() {
           <SearchBar />
         </div>
         <div className="home__filter-container">
-          <CustomFilter title="fuel" />
-          <CustomFilter title="year" />
+          <CustomFilter title="fuel" options={fuels} />
+          <CustomFilter title="year" options={yearsOfProduction}/>
         </div>
       </div>
 
@@ -35,6 +43,10 @@ export default async function Home() {
                 <CarCard car={car}/>
               ))}
             </div>
+            <ShowMore
+              pageNumber={(searchParams.limit || 10)/10}
+              isNext={(searchParams.limit||10)>allCars.length}
+            />
           </section>
         ):(
           <div className="home__error-container">
